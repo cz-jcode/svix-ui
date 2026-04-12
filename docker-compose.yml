@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  # UI for managing Svix
+  svix-ui:
+    build: https://github.com/cz-jcode/svix-ui.git
+    ports:
+      - "${SVIX_UI_PORT:-9999:80}"
+    environment:
+      - SVIX_BASE_URL=http://localhost:9001
+      - SVIX_TOKEN=local-dev-jwt-secret-change-me
+
+  # Postgres database used by Svix
+  svix-postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: svix
+      POSTGRES_PASSWORD: svix
+      POSTGRES_DB: svix
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U svix -d svix"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Redis backend used by Svix
+  svix-redis:
+    image: redis:7
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Svix server = local webhook infrastructure
+  svix:
+    image: svix/svix-server:latest
+    depends_on:
+      svix-postgres:
+        condition: service_healthy
+      svix-redis:
+        condition: service_healthy
+    environment:
+      SVIX_JWT_SECRET: "local-dev-jwt-secret-change-me"
+      SVIX_DB_DSN: "postgresql://svix:svix@svix-postgres:5432/svix"
+      SVIX_REDIS_DSN: "redis://svix-redis:6379"
+      SVIX_QUEUE_TYPE: "redis"
+      SVIX_WHITELIST_SUBNETS: '["127.0.0.1/32","172.16.0.0/12","192.168.0.0/16","10.0.0.0/8"]'
+    ports:
+      - "${SVIX_PORT:-9998}:8071"
