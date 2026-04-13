@@ -69,6 +69,7 @@ export default function SvixAdmin() {
     const [isBusy, setIsBusy] = useState<boolean>(false);
     const [copied, setCopied] = useState<boolean>(false);
     const [apiHistory, setApiHistory] = useState<ApiHistoryEntry[]>([]);
+    const lastErrorTimeRef = useRef<number>(0);
     const toast = useToastState(setApiHistory);
 
     const { apiCall, headers: apiHeaders } = useSvixApi(baseUrl, token, setApiHistory);
@@ -76,10 +77,20 @@ export default function SvixAdmin() {
     const guarded = useCallback(async <T,>(fn: () => Promise<T>, successMessage?: string): Promise<T> => {
         setIsBusy(true);
         try {
+            const now = Date.now();
+            const timeSinceLastError = now - lastErrorTimeRef.current;
+            if (timeSinceLastError < 2000) {
+                // Debounce/delay when errors are happening rapidly
+                await new Promise(resolve => setTimeout(resolve, 2000 - timeSinceLastError));
+            }
+
             const result = await fn();
             if (successMessage) toast.push("success", successMessage);
             return result;
         } catch (err: any) {
+            const now = Date.now();
+            lastErrorTimeRef.current = now;
+            (window as any)._svix_last_error_time = now;
             toast.push("error", err.message || "Request failed.");
             throw err;
         } finally {
@@ -215,10 +226,10 @@ export default function SvixAdmin() {
 
     useEffect(() => {
         if (baseUrl && token) {
-            loadApps();
-            loadEventTypes();
+            loadApps(true);
+            loadEventTypes(true);
         }
-    }, [baseUrl, token, loadApps, loadEventTypes]);
+    }, [baseUrl, token]);
 
     useEffect(() => {
         if (!baseUrl || !token) return;

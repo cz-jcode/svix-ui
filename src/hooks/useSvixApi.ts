@@ -33,8 +33,14 @@ export function useSvixApi(baseUrl: string, token: string, setApiHistory: (fn: (
                 },
                 body: body !== undefined ? JSON.stringify(body) : undefined,
             });
+            if (response.status === 429) {
+                // Rate limited, adding a small delay
+                (window as any)._svix_last_error_time = Date.now();
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
             responseBody = await readJson(response);
         } catch (e: any) {
+            (window as any)._svix_last_error_time = Date.now();
             error = e.message;
         }
         

@@ -37,6 +37,15 @@ docker compose up
 
 The UI will be accessible at [http://localhost:8080](http://localhost:8080).
 
+#### How to get Auth Token for local Svix
+When running with the provided `docker-compose.yml`, you can generate an Auth Token by running:
+
+```bash
+docker compose exec svix svix-server jwt generate | sed 's/^Token (Bearer): //'
+```
+
+Copy the output and paste it into the "Auth Token" field in the UI.
+
 ### Manual Docker Build
 
 ```bash

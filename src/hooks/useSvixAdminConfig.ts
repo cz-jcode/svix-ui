@@ -12,8 +12,26 @@ export interface ConfigOptions {
 }
 
 export function useSvixAdminConfig(options: ConfigOptions) {
-    const [baseUrl, setBaseUrl] = useState<string>(options.defaultBaseUrl);
-    const [token, setToken] = useState<string>(options.defaultToken);
+    const [baseUrl, setBaseUrl] = useState<string>(() => {
+        try {
+            const configRaw = window.localStorage.getItem(LS_KEY);
+            if (configRaw) {
+                const saved = JSON.parse(configRaw);
+                if (saved.baseUrl) return saved.baseUrl;
+            }
+        } catch { /* ignore */ }
+        return options.defaultBaseUrl;
+    });
+    const [token, setToken] = useState<string>(() => {
+        try {
+            const configRaw = window.localStorage.getItem(LS_KEY);
+            if (configRaw) {
+                const saved = JSON.parse(configRaw);
+                if (saved.token) return saved.token;
+            }
+        } catch { /* ignore */ }
+        return options.defaultToken;
+    });
     const [saveToken, setSaveToken] = useState<boolean>(() => {
         try {
             const saved = window.localStorage.getItem(LS_SAVE_TOKEN_KEY);
@@ -32,7 +50,7 @@ export function useSvixAdminConfig(options: ConfigOptions) {
         isConsoleOpen: false,
     });
 
-    // Load initial layout and general config
+    // Load initial layout
     useEffect(() => {
         const layoutRaw = window.localStorage.getItem(LS_LAYOUT_KEY);
         if (layoutRaw) {
@@ -42,15 +60,6 @@ export function useSvixAdminConfig(options: ConfigOptions) {
             } catch (e) {
                 console.error("Failed to parse layout from localStorage", e);
             }
-        }
-
-        const configRaw = window.localStorage.getItem(LS_KEY);
-        if (configRaw) {
-            try {
-                const saved = JSON.parse(configRaw);
-                if (saved.baseUrl) setBaseUrl(saved.baseUrl);
-                if (saved.token) setToken(saved.token);
-            } catch { /* ignore */ }
         }
     }, []);
 

@@ -15,8 +15,12 @@ export function useSvixAdminState(
     selectMessage: any
 ) {
     const [apps, setApps] = useState<SvixApplication[]>([]);
+    const [appsLoaded, setAppsLoaded] = useState(false);
     const [eventTypes, setEventTypes] = useState<SvixEventType[]>([]);
+    const [eventTypesLoaded, setEventTypesLoaded] = useState(false);
     const [endpointsByApp, setEndpointsByApp] = useState<Record<string, SvixEndpoint[]>>({});
+    const [endpointsLoadedByApp, setEndpointsLoadedByApp] = useState<Record<string, boolean>>({});
+    const [messagesLoadedByApp, setMessagesLoadedByApp] = useState<Record<string, boolean>>({});
     const [messagesByApp, setMessagesByApp] = useState<Record<string, SvixMessage[]>>({});
     const [attemptsByEndpoint, setAttemptsByEndpoint] = useState<Record<string, SvixAttempt[]>>({});
     const [attemptsByMessage, setAttemptsByMessage] = useState<Record<string, SvixAttempt[]>>({});
@@ -40,34 +44,37 @@ export function useSvixAdminState(
     }, []);
 
     const loadApps = useCallback(async (force = false) => {
-        if (!force && apps.length > 0) return;
+        if (!force && appsLoaded) return;
         return guarded(async () => {
             const res = await apiCall("GET", `/api/v1/app${buildQuery({ limit: 100, order: "descending" })}`);
             if (!res.ok) throw new Error(`Failed to load apps: ${res.status}`);
             setApps(res.body.data ?? []);
+            setAppsLoaded(true);
         }, "Applications loaded.");
-    }, [apiCall, guarded, buildQuery, apps.length]);
+    }, [apiCall, guarded, buildQuery, appsLoaded]);
 
     const loadEventTypes = useCallback(async (force = false) => {
-        if (!force && eventTypes.length > 0) return;
+        if (!force && eventTypesLoaded) return;
         return guarded(async () => {
             const res = await apiCall("GET", `/api/v1/event-type${buildQuery({ limit: 100, with_content: true })}`);
             if (!res.ok) throw new Error(`Failed to load event types: ${res.status}`);
             setEventTypes(res.body.data ?? []);
+            setEventTypesLoaded(true);
         }, "Event types loaded.");
-    }, [apiCall, guarded, buildQuery, eventTypes.length]);
+    }, [apiCall, guarded, buildQuery, eventTypesLoaded]);
 
     const loadEndpoints = useCallback(async (appId: string, force = false) => {
-        if (!force && endpointsByApp[appId]?.length > 0) return;
+        if (!force && endpointsLoadedByApp[appId]) return;
         return guarded(async () => {
             const res = await apiCall("GET", `/api/v1/app/${encodeURIComponent(appId)}/endpoint${buildQuery({ limit: 100, order: "descending" })}`);
             if (!res.ok) throw new Error(`Failed to load endpoints: ${res.status}`);
             setEndpointsByApp(prev => ({ ...prev, [appId]: res.body.data ?? [] }));
+            setEndpointsLoadedByApp(prev => ({ ...prev, [appId]: true }));
         }, `Endpoints for ${appId} loaded.`);
-    }, [apiCall, guarded, buildQuery, endpointsByApp]);
+    }, [apiCall, guarded, buildQuery, endpointsLoadedByApp]);
 
     const loadMessages = useCallback(async (appId: string, iterator: string | null = null, force = false) => {
-        if (!force && !iterator && messagesByApp[appId]?.length > 0 && !msgSearch.trim()) return;
+        if (!force && !iterator && messagesLoadedByApp[appId] && !msgSearch.trim()) return;
         return guarded(async () => {
             const query: any = { limit: 50 };
             if (iterator) query.iterator = iterator;
@@ -87,6 +94,7 @@ export function useSvixAdminState(
             } else {
                 updatedMsgs = newData;
                 setMessagesByApp(prev => ({ ...prev, [appId]: updatedMsgs }));
+                setMessagesLoadedByApp(prev => ({ ...prev, [appId]: true }));
             }
             setMsgIterator(res.body.iterator || null);
 
@@ -95,7 +103,7 @@ export function useSvixAdminState(
                 selectMessage(appId, updatedMsgs[0]);
             }
         }, iterator ? "More messages loaded." : "Messages loaded.");
-    }, [apiCall, guarded, msgSearch, buildQuery, selected, selectMessage, messagesByApp]);
+    }, [apiCall, guarded, msgSearch, buildQuery, selected, selectMessage, messagesLoadedByApp]);
 
     const loadMoreMessages = useCallback(async (appId: string) => {
         if (!msgIterator || isLoadingMoreMessages) return;
