@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect} from "react";
 import { Plus, Trash2, Send, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,6 @@ export function MessagePanel({
     onDeleteContent,
     msgSearch,
     onSearchChange,
-    onRefresh,
     messageForm,
     setMessageForm,
     createMessage,
@@ -92,17 +91,23 @@ export function MessagePanel({
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <div className="space-y-2">
                                         <Label>Event Type</Label>
-                                        <select
-                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                            value={messageForm.eventType}
-                                            onChange={(e) => setMessageForm((s: any) => ({ ...s, eventType: e.target.value }))}
-                                        >
-                                            {eventTypes.map((et) => (
-                                                <option key={et.name} value={et.name}>
-                                                    {et.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <div className="relative group">
+                                            <select
+                                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                                                value={messageForm.eventType}
+                                                onChange={(e) => setMessageForm((s: any) => ({ ...s, eventType: e.target.value }))}
+                                                title={messageForm.eventType}
+                                            >
+                                                {eventTypes.map((et) => (
+                                                    <option key={et.name} value={et.name} title={et.name}>
+                                                        {et.name.length > 25 ? `${et.name.substring(0, 25)}...` : et.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Event ID (Optional UID)</Label>
@@ -156,23 +161,27 @@ export function MessagePanel({
         <div className="flex flex-1 h-full gap-6 overflow-hidden p-6 pb-0">
             {/* List Side */}
             <div className="w-[300px] shrink-0 flex flex-col gap-4 min-h-0 h-full pb-20 overflow-hidden">
-                <div className="flex items-center gap-2 shrink-0">
-                    <Input
-                        placeholder="Search event types..."
-                        value={msgSearch}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        className="h-9"
-                    />
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 shrink-0 rounded-xl"
-                        onClick={() => selected.appId && onRefresh(selected.appId)}
-                        disabled={isBusy}
-                        title="Refresh messages"
-                    >
-                        <RefreshCw className={classNames("h-4 w-4", isBusy && "animate-spin")} />
-                    </Button>
+                <div className="flex flex-col gap-2 shrink-0 px-1">
+                    <div className="flex items-center gap-2">
+                        <div className="relative w-full group">
+                            <select
+                                className="flex h-10 w-full rounded-2xl border border-input/50 bg-card/40 px-4 py-1 pr-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 appearance-none shadow-sm cursor-pointer hover:bg-muted/40 hover:border-input transition-all font-medium text-foreground/80"
+                                value={msgSearch}
+                                onChange={(e) => onSearchChange(e.target.value)}
+                                title={msgSearch || "Filter by Event Type: All"}
+                            >
+                                <option value="">Filter: All</option>
+                                {eventTypes.map((et) => (
+                                    <option key={et.name} value={et.name} title={et.name}>
+                                        {et.name.length > 25 ? `${et.name.substring(0, 25)}...` : et.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <ScrollArea viewportRef={scrollRef} className="flex-1 rounded-2xl border bg-card/30 min-h-0">

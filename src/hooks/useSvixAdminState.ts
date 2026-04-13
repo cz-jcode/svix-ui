@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { 
     SvixApplication, 
     SvixEventType, 
@@ -103,11 +103,11 @@ export function useSvixAdminState(
             setMsgIterator(res.body.iterator || null);
 
             // Auto-select last message if none selected
-            if (updatedMsgs.length > 0 && selected.type === "message-folder" && selected.appId === appId && !selected.msgId) {
+            if (updatedMsgs.length > 0 && selected.appId === appId && (selected.type === "message-folder" || selected.type === "message" || selected.type === "message-attempts") && !selected.msgId) {
                 selectMessage(appId, updatedMsgs[0]);
             }
         }, iterator ? "More messages loaded." : "Messages loaded.");
-    }, [apiCall, guarded, msgSearch, buildQuery, selected, selectMessage, messagesLoadedByApp]);
+    }, [apiCall, guarded, msgSearch, buildQuery, selected.appId, selected.type, selected.msgId, selectMessage, messagesLoadedByApp]);
 
     const loadMoreMessages = useCallback(async (appId: string) => {
         if (!msgIterator || isLoadingMoreMessages) return;
@@ -142,6 +142,12 @@ export function useSvixAdminState(
             setDestinationsByMessage((s) => ({ ...s, [`${appId}:${msgId}`]: res.body.data ?? [] }));
         }, "Message destinations loaded.");
     }, [apiCall, guarded, buildQuery]);
+
+    useEffect(() => {
+        if (selected.appId && (selected.type === "message-folder" || selected.type === "message" || selected.type === "message-attempts")) {
+            loadMessages(selected.appId, null, true);
+        }
+    }, [msgSearch, selected.appId, selected.type, loadMessages]);
 
     return {
         apps, setApps,
