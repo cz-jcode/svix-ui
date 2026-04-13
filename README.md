@@ -6,6 +6,21 @@ Modern web interface for managing Svix (Webhooks as a Service), designed for qui
 
 This application serves as a replacement or supplement to the standard Svix dashboard. It offers:
 
+### 📸 Screenshots
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/cz-jcode/svix-ui/main/public/screenshot-messages.png" width="800" alt="Messages Overview">
+  <br>
+  <i><b>Messages:</b> Quick overview of messages.</i>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/cz-jcode/svix-ui/main/public/screenshot-endpoint.png" width="800" alt="Endpoint Overview">
+  <br>
+  <i><b>Messages:</b> Quick overview of endpoint.</i>
+</p>
+
+#### Features:
 - **Application Management**: Overview and editing of applications within your Svix account.
 - **Event Type Management**: Defining and viewing the types of events your applications send.
 - **Endpoint Operations**: Setting up URLs, event filters, and channels for delivering webhooks.
