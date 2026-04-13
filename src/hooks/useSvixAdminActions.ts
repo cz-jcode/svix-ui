@@ -57,7 +57,7 @@ export function useSvixAdminActions(
         });
     }, [setSelected, setEndpointForm]);
 
-    const selectMessage = useCallback(async (appId: string, msg: SvixMessage) => {
+    const selectMessage = useCallback((appId: string, msg: SvixMessage) => {
         setSelected({ type: "message", appId, msgId: msg.id, item: msg });
         setReadMessageIds(prev => {
             if (prev.has(msg.id)) return prev;

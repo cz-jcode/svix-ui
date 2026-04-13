@@ -75,38 +75,51 @@ export function useSvixAdminState(
     }, [apiCall, guarded, buildQuery, endpointsLoadedByApp]);
 
     const loadMessages = useCallback(async (appId: string, iterator: string | null = null, force = false) => {
+        // If not forcing and no iterator, and messages already loaded for this app (and no search filter active), skip.
         if (!force && !iterator && messagesLoadedByApp[appId] && !msgSearch.trim()) return;
-        return guarded(async () => {
-            const query: any = { limit: 50 };
-            if (iterator) query.iterator = iterator;
-            if (msgSearch.trim()) query.event_types = [msgSearch.trim()];
-            
-            const res = await apiCall("GET", `/api/v1/app/${encodeURIComponent(appId)}/msg${buildQuery(query)}`);
-            if (!res.ok) throw new Error(`Failed to load messages: ${res.status}`);
-            
-            const newData: SvixMessage[] = res.body.data ?? [];
-            const hasMore = !!res.body.iterator;
-            setHasMoreMessagesByApp(prev => ({ ...prev, [appId]: hasMore }));
+        
+        // Anti-recursion: if this exact call is already in progress, skip.
+        const callKey = `loadMsgs:${appId}:${iterator}:${msgSearch}`;
+        if ((window as any)._svix_loading_keys?.has(callKey)) return;
+        if (!(window as any)._svix_loading_keys) (window as any)._svix_loading_keys = new Set();
+        (window as any)._svix_loading_keys.add(callKey);
+        console.log(`[DEBUG] Loading messages for ${appId}, force=${force}, iterator=${iterator}`);
 
-            let updatedMsgs: SvixMessage[] = [];
-            if (iterator) {
-                setMessagesByApp(prev => {
-                    const existing = prev[appId] || [];
-                    updatedMsgs = [...existing, ...newData];
-                    return { ...prev, [appId]: updatedMsgs };
-                });
-            } else {
-                updatedMsgs = newData;
-                setMessagesByApp(prev => ({ ...prev, [appId]: updatedMsgs }));
-                setMessagesLoadedByApp(prev => ({ ...prev, [appId]: true }));
-            }
-            setMsgIterator(res.body.iterator || null);
+        try {
+            return await guarded(async () => {
+                const query: any = { limit: 50 };
+                if (iterator) query.iterator = iterator;
+                if (msgSearch.trim()) query.event_types = [msgSearch.trim()];
+                
+                const res = await apiCall("GET", `/api/v1/app/${encodeURIComponent(appId)}/msg${buildQuery(query)}`);
+                if (!res.ok) throw new Error(`Failed to load messages: ${res.status}`);
+                
+                const newData: SvixMessage[] = res.body.data ?? [];
+                const hasMore = !!res.body.iterator;
+                setHasMoreMessagesByApp(prev => ({ ...prev, [appId]: hasMore }));
 
-            // Auto-select last message if none selected
-            if (updatedMsgs.length > 0 && selected.appId === appId && (selected.type === "message-folder" || selected.type === "message" || selected.type === "message-attempts") && !selected.msgId) {
-                selectMessage(appId, updatedMsgs[0]);
-            }
-        }, iterator ? "More messages loaded." : "Messages loaded.");
+                let updatedMsgs: SvixMessage[] = [];
+                if (iterator) {
+                    setMessagesByApp(prev => {
+                        const existing = prev[appId] || [];
+                        updatedMsgs = [...existing, ...newData];
+                        return { ...prev, [appId]: updatedMsgs };
+                    });
+                } else {
+                    updatedMsgs = newData;
+                    setMessagesByApp(prev => ({ ...prev, [appId]: updatedMsgs }));
+                    setMessagesLoadedByApp(prev => ({ ...prev, [appId]: true }));
+                }
+                setMsgIterator(res.body.iterator || null);
+
+                // Auto-select last message if none selected
+                if (updatedMsgs.length > 0 && selected.appId === appId && (selected.type === "message-folder" || selected.type === "message" || selected.type === "message-attempts") && !selected.msgId) {
+                    selectMessage(appId, updatedMsgs[0]);
+                }
+            }, iterator ? "More messages loaded." : "Messages loaded.");
+        } finally {
+            (window as any)._svix_loading_keys.delete(callKey);
+        }
     }, [apiCall, guarded, msgSearch, buildQuery, selected.appId, selected.type, selected.msgId, selectMessage, messagesLoadedByApp]);
 
     const loadMoreMessages = useCallback(async (appId: string) => {
@@ -145,7 +158,20 @@ export function useSvixAdminState(
 
     useEffect(() => {
         if (selected.appId && (selected.type === "message-folder" || selected.type === "message" || selected.type === "message-attempts")) {
-            loadMessages(selected.appId, null, true);
+            // Force load messages when the filter (msgSearch) changes OR when the app changes.
+            const force = (window as any)._last_msg_search !== msgSearch || (window as any)._last_app_id !== selected.appId;
+            
+            // If it's just a selection of a different message within the same app and same filter, don't reload.
+            // We already have appId and type in dependencies, but selected.msgId changes when clicking a message.
+            if (!force && (window as any)._last_type === selected.type) {
+                return;
+            }
+
+            (window as any)._last_msg_search = msgSearch;
+            (window as any)._last_app_id = selected.appId;
+            (window as any)._last_type = selected.type;
+            
+            loadMessages(selected.appId, null, force);
         }
     }, [msgSearch, selected.appId, selected.type, loadMessages]);
 

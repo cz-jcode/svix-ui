@@ -135,10 +135,10 @@ export default function SvixAdmin() {
         token, 
         selected, 
         msgSearch, 
-        apiHeaders, 
+        apiCall, 
         buildQuery, 
         setMessagesByApp,
-        selected.type === "message-folder" || selected.type === "message" || selected.type === "message-attempts"
+        !!selected.appId
     );
 
     const [appForm, setAppForm] = useState(DEFAULT_APP_FORM);
@@ -260,7 +260,15 @@ export default function SvixAdmin() {
         // Auto-load endpoints and messages for application if not present
         if (selected.appId) {
             if (!endpointsByApp[selected.appId]) loadEndpoints(selected.appId);
-            if (!messagesByApp[selected.appId]) loadMessages(selected.appId);
+            
+            // Do NOT call loadMessages here if it's already handled by the useEffect 
+            // in useSvixAdminState (which reacts to msgSearch and context changes).
+            // Only load if totally missing and NOT in a message context that would trigger the other effect.
+            const isMessageContext = selected.type === "message-folder" || selected.type === "message" || selected.type === "message-attempts";
+            if (!messagesByApp[selected.appId] && !isMessageContext) {
+                 loadMessages(selected.appId);
+            }
+            
             setExpanded(prev => {
                 const key = `app:${selected.appId}`;
                 if (prev[key]) return prev;
