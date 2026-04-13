@@ -65,10 +65,14 @@ export function ResourceTree({
                 expandable
                 expanded={expanded.eventTypes}
                 onClick={async () => {
-                    toggle("eventTypes");
+                    if (!expanded.eventTypes) toggle("eventTypes");
                     setSelected({ type: "newEventType" });
                     if (eventTypes.length === 0) await loadEventTypes();
                 }}
+                onDoubleClick={() => {
+                    if (expanded.eventTypes) toggle("eventTypes");
+                }}
+                onExpand={() => toggle("eventTypes")}
                 icon={<Tag className="h-4 w-4" />}
                 label="Event Types"
                 right={<Badge variant="secondary">{eventTypes.length}</Badge>}
@@ -94,9 +98,13 @@ export function ResourceTree({
                 expandable
                 expanded={expanded.apps}
                 onClick={() => {
-                    toggle("apps");
+                    if (!expanded.apps) toggle("apps");
                     setSelected({ type: "newApp" });
                 }}
+                onDoubleClick={() => {
+                    if (expanded.apps) toggle("apps");
+                }}
+                onExpand={() => toggle("apps")}
                 icon={<FolderTree className="h-4 w-4" />}
                 label="Applications"
                 right={<Badge variant="secondary">{apps.length}</Badge>}
@@ -113,9 +121,13 @@ export function ResourceTree({
                             expanded={expanded[appKey]}
                             selected={selected.type === "app" && selected.appId === app.id}
                             onClick={async () => {
-                                toggle(appKey);
+                                if (!expanded[appKey]) toggle(appKey);
                                 await selectApp(app);
                             }}
+                            onDoubleClick={() => {
+                                if (expanded[appKey]) toggle(appKey);
+                            }}
+                            onExpand={() => toggle(appKey)}
                             icon={<Boxes className="h-4 w-4" />}
                             label={(app.name || app.id).length > 20 ? (app.name || app.id).substring(0, 20) + "..." : (app.name || app.id)}
                             title={app.name || app.id}
@@ -129,10 +141,14 @@ export function ResourceTree({
                                     expanded={expanded[endpointsKey]}
                                     selected={selected.type === "newEndpoint" && selected.appId === app.id}
                                     onClick={async () => {
-                                        toggle(endpointsKey);
+                                        if (!expanded[endpointsKey]) toggle(endpointsKey);
                                         setSelected({ type: "newEndpoint", appId: app.id });
                                         if (!endpointsByApp[app.id]) await loadEndpoints(app.id);
                                     }}
+                                    onDoubleClick={() => {
+                                        if (expanded[endpointsKey]) toggle(endpointsKey);
+                                    }}
+                                    onExpand={() => toggle(endpointsKey)}
                                     icon={<Boxes className="h-4 w-4" />}
                                     label="Endpoints"
                                     right={<Badge variant="secondary">{appEndpoints.length}</Badge>}
