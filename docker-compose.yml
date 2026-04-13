@@ -6,8 +6,7 @@ services:
     ports:
       - "${SVIX_UI_PORT:-9999:80}"
     environment:
-      - SVIX_BASE_URL=http://localhost:9001
-      - SVIX_TOKEN=local-dev-jwt-secret-change-me
+      - SVIX_BASE_URL=http://localhost:${SVIX_PORT:-9998}
 
   # Postgres database used by Svix
   svix-postgres:
