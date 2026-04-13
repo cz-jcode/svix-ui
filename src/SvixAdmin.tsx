@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { 
     SvixMessage, 
     ApiHistoryEntry,
@@ -239,17 +239,9 @@ export default function SvixAdmin() {
         withContent: true,
     });
 
-    const scrollRef = useRef(null);
-
     useEffect(() => {
         window.localStorage.setItem(LS_READ_MSGS_KEY, JSON.stringify(Array.from(readMessageIds)));
     }, [readMessageIds]);
-
-    const headers: Record<string, string> = useMemo(() => {
-        const h: Record<string, string> = { Accept: "application/json" };
-        if (token) h["Authorization"] = `Bearer ${token}`;
-        return h;
-    }, [token]);
 
     useEffect(() => {
         if (baseUrl && token) {

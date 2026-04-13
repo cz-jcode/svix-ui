@@ -83,15 +83,6 @@ export function useSvixAdminActions(
         });
     }, [setSelected, setEventTypeForm]);
 
-    const selectEventTypeByName = useCallback((name: string) => {
-        const et = eventTypes.find((e) => e.name === name);
-        if (et) {
-            selectEventType(et);
-        } else {
-            toast.push("error", `Event type ${name} not found in loaded list.`);
-        }
-    }, [eventTypes, selectEventType, toast]);
-
     const createApplication = useCallback(async () => {
         await guarded(async () => {
             const metadata = parseJsonSafe(appForm.metadata, {});

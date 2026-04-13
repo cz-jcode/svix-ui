@@ -1,8 +1,7 @@
-import { Tag, FolderTree, Boxes, Send, Activity, Mail, Info, Globe, Plus, Zap } from "lucide-react";
+import { Tag, FolderTree, Boxes, Send, Activity, Mail, Info, Globe, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { TreeRow } from "./TreeRow";
-import { Button } from "@/components/ui/button";
 import { classNames } from "@/utils/admin";
 import { SvixApplication, SvixEventType, SelectedItem, SvixEndpoint, SvixMessage } from "@/types/svix";
 
@@ -64,7 +63,7 @@ export function ResourceTree({
                 depth={0}
                 selected={selected.type === "newEventType"}
                 expandable
-                expanded={!!expanded.eventTypes}
+                expanded={expanded.eventTypes}
                 onClick={async () => {
                     toggle("eventTypes");
                     setSelected({ type: "newEventType" });
@@ -111,7 +110,7 @@ export function ResourceTree({
                         <TreeRow
                             depth={1}
                             expandable
-                            expanded={!!expanded[appKey]}
+                            expanded={expanded[appKey]}
                             selected={selected.type === "app" && selected.appId === app.id}
                             onClick={async () => {
                                 toggle(appKey);
@@ -127,7 +126,7 @@ export function ResourceTree({
                                 <TreeRow
                                     depth={2}
                                     expandable
-                                    expanded={!!expanded[endpointsKey]}
+                                    expanded={expanded[endpointsKey]}
                                     selected={selected.type === "newEndpoint" && selected.appId === app.id}
                                     onClick={async () => {
                                         toggle(endpointsKey);
