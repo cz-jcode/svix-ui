@@ -1,4 +1,4 @@
-import { Tag, FolderTree, Boxes, Send, Activity, Mail, Info, Globe, Plus } from "lucide-react";
+import { Tag, FolderTree, Boxes, Send, Activity, Mail, Info, Globe, Plus, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { TreeRow } from "./TreeRow";
@@ -162,6 +162,16 @@ export function ResourceTree({
                                         />
                                     </div>
                                 ))}
+
+                                <TreeRow
+                                    depth={2}
+                                    selected={selected.type === "producer" && selected.appId === app.id}
+                                    onClick={() => {
+                                        setSelected({ type: "producer", appId: app.id });
+                                    }}
+                                    icon={<Zap className="h-4 w-4 text-amber-500" />}
+                                    label="Producer"
+                                />
 
                                 <TreeRow
                                     depth={2}

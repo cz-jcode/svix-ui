@@ -13,6 +13,7 @@ import { EndpointPanel } from "./EndpointPanel";
 import { MessagePanel } from "./MessagePanel";
 import { AboutPanel } from "./AboutPanel";
 import { ResourcesPanel } from "./ResourcesPanel";
+import { ProducerPanel } from "./ProducerPanel";
 
 interface DetailViewProps {
     selected: SelectedItem;
@@ -32,6 +33,8 @@ interface DetailViewProps {
     setEndpointForm: (f: any) => void;
     messageForm: any;
     setMessageForm: (f: any) => void;
+    producerForm: any;
+    setProducerForm: (f: any) => void;
     attemptFilter: any;
     setAttemptFilter: (f: any) => void;
     
@@ -45,6 +48,10 @@ interface DetailViewProps {
     patchEndpoint: (appId: string, endpointId: string) => Promise<void>;
     deleteEndpoint: (appId: string, endpointId: string) => Promise<void>;
     createMessage: (appId: string) => Promise<void>;
+    createProducerMessage: (appId: string) => Promise<void>;
+    stopEmission?: () => void;
+    isEmitting?: boolean;
+    emissionProgress?: { current: number; total: number };
     resendToEndpoint: any;
     deleteMessageContent: any;
     
@@ -80,6 +87,8 @@ export function DetailView({
     setEndpointForm,
     messageForm,
     setMessageForm,
+    producerForm,
+    setProducerForm,
     attemptFilter,
     setAttemptFilter,
     createApplication,
@@ -92,6 +101,10 @@ export function DetailView({
     patchEndpoint,
     deleteEndpoint,
     createMessage,
+    createProducerMessage,
+    stopEmission,
+    isEmitting,
+    emissionProgress,
     resendToEndpoint,
     deleteMessageContent,
     loadAttemptsForEndpoint,
@@ -107,7 +120,7 @@ export function DetailView({
     attemptQuery,
     onTabChange,
 }: DetailViewProps) {
-    const selectedApp = selected.appId ? apps.find((x) => x.id === selected.appId) || null : (selected.type === "app" ? selected.item as SvixApplication : null);
+    const selectedApp = selected.appId ? apps.find((x) => x.id === selected.appId) || null : (selected.type === "app" || selected.type === "producer" ? selected.item as SvixApplication : null);
     const selectedEndpoints = selected.appId ? endpointsByApp[selected.appId] || [] : [];
     const selectedMessages = selected.appId ? messagesByApp[selected.appId] || [] : [];
     const selectedMessageDestinations = selected.appId && selected.msgId ? destinationsByMessage[`${selected.appId}:${selected.msgId}`] || [] : [];
@@ -207,6 +220,29 @@ export function DetailView({
                 <ScrollArea className="h-full w-full">
                     <div className="p-1 pb-10">
                         <ResourcesPanel />
+                    </div>
+                </ScrollArea>
+            </div>
+        );
+    }
+    
+    if (selected.type === "producer") {
+        return (
+            <div className="h-full w-full p-6 pb-20">
+                <ScrollArea className="h-full w-full">
+                    <div className="p-1 pb-10">
+                        <ProducerPanel
+                            selected={selected}
+                            apps={apps}
+                            eventTypes={eventTypes}
+                            producerForm={producerForm}
+                            setProducerForm={setProducerForm}
+                            createProducerMessage={createProducerMessage}
+                            stopEmission={stopEmission}
+                            isEmitting={isEmitting}
+                            emissionProgress={emissionProgress}
+                            isBusy={isBusy}
+                        />
                     </div>
                 </ScrollArea>
             </div>

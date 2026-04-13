@@ -94,7 +94,7 @@ export interface LayoutState {
     isConsoleOpen: boolean;
 }
 
-export type SelectedType = "root" | "apps" | "app" | "eventTypes" | "event-type" | "event-type-folder" | "endpoints" | "endpoint" | "endpoint-folder" | "messages" | "message" | "message-folder" | "endpoint-attempts" | "message-attempts" | "message-create" | "newApp" | "newEventType" | "newEndpoint" | "newMessage" | "about" | "resources";
+export type SelectedType = "root" | "apps" | "app" | "eventTypes" | "event-type" | "event-type-folder" | "endpoints" | "endpoint" | "endpoint-folder" | "messages" | "message" | "message-folder" | "endpoint-attempts" | "message-attempts" | "message-create" | "newApp" | "newEventType" | "newEndpoint" | "newMessage" | "about" | "resources" | "producer";
 
 export interface SelectedItem {
     type: SelectedType;

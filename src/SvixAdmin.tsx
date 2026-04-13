@@ -55,6 +55,14 @@ const DEFAULT_MESSAGE_FORM = {
     payloadRetentionPeriod: "90",
     payload: '{\n  "hello": "world"\n}',
 };
+const DEFAULT_PRODUCER_FORM = {
+    appId: "",
+    eventType: "",
+    payload: '{\n  "id": 1,\n  "status": "pending",\n  "data": "example"\n}',
+    repeatCount: 1,
+    repeatDelay: 10000,
+    incrementField: "id",
+};
 
 export default function SvixAdmin() {
     const {
@@ -135,6 +143,16 @@ export default function SvixAdmin() {
     const [appForm, setAppForm] = useState(DEFAULT_APP_FORM);
     const [eventTypeForm, setEventTypeForm] = useState(DEFAULT_EVENT_TYPE_FORM);
     const [endpointForm, setEndpointForm] = useState(DEFAULT_ENDPOINT_FORM);
+    const [producerForm, setProducerForm] = useState(DEFAULT_PRODUCER_FORM);
+    const [emissionProgress, setEmissionProgress] = useState({ 
+        current: 0, 
+        total: 0, 
+        currentPayload: null as any, 
+        nextPayload: null as any,
+        lastEmittedAt: null as number | null,
+        nextEmissionAt: null as number | null
+    });
+    const isEmittingRef = useRef(false);
 
     const [readMessageIds, setReadMessageIds] = useState<Set<string>>(() => {
         try {
@@ -148,6 +166,7 @@ export default function SvixAdmin() {
     const [loadedContext, setLoadedContext] = useState<string>("");
 
     const [messageForm, setMessageForm] = useState(DEFAULT_MESSAGE_FORM);
+    const [isEmitting, setIsEmitting] = useState(false);
 
     useEffect(() => {
         if (selected.type === "root" || selected.type === "newApp") {
@@ -158,8 +177,10 @@ export default function SvixAdmin() {
             setEndpointForm(DEFAULT_ENDPOINT_FORM);
         } else if (selected.type === "message-folder") {
             setMessageForm(DEFAULT_MESSAGE_FORM);
+        } else if (selected.type === "producer" && selected.appId) {
+            setProducerForm((prev: any) => ({ ...prev, appId: selected.appId }));
         }
-    }, [selected.type]);
+    }, [selected.type, selected.appId]);
 
     const {
         selectApp,
@@ -176,6 +197,8 @@ export default function SvixAdmin() {
         patchEndpoint,
         deleteEndpoint,
         createMessage,
+        createProducerMessage,
+        stopEmission,
         resendToEndpoint,
         deleteMessageContent,
     } = useSvixAdminActions(
@@ -195,11 +218,15 @@ export default function SvixAdmin() {
         eventTypeForm,
         endpointForm,
         messageForm,
+        producerForm,
         apps,
         eventTypes,
         endpointsByApp,
         messagesByApp,
-        toast
+        toast,
+        setEmissionProgress,
+        setIsEmitting,
+        isEmittingRef
     );
     const [attemptFilter, setAttemptFilter] = useState({
         limit: "20",
@@ -405,6 +432,8 @@ export default function SvixAdmin() {
                                 setEndpointForm={setEndpointForm}
                                 messageForm={messageForm}
                                 setMessageForm={setMessageForm}
+                                producerForm={producerForm}
+                                setProducerForm={setProducerForm}
                                 attemptFilter={attemptFilter}
                                 setAttemptFilter={setAttemptFilter}
                                 createApplication={createApplication}
@@ -417,6 +446,10 @@ export default function SvixAdmin() {
                                 patchEndpoint={patchEndpoint}
                                 deleteEndpoint={deleteEndpoint}
                                 createMessage={createMessage}
+                                createProducerMessage={createProducerMessage}
+                                stopEmission={stopEmission}
+                                isEmitting={isEmitting}
+                                emissionProgress={emissionProgress}
                                 resendToEndpoint={resendToEndpoint}
                                 deleteMessageContent={deleteMessageContent}
                                 loadAttemptsForEndpoint={loadAttemptsForEndpoint}

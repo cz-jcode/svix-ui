@@ -69,6 +69,8 @@ export function useSvixRouter() {
                 }
             } else if (parts[2] === "messages") {
                 next = { type: "message-folder", appId };
+            } else if (parts[2] === "producer") {
+                next = { type: "producer", appId };
             }
         }
         
@@ -118,6 +120,8 @@ export function useSvixRouter() {
             newPath = `/app/${state.appId}`;
         } else if (state.type === "message-folder") {
             newPath = `/app/${state.appId}/messages`;
+        } else if (state.type === "producer") {
+            newPath = `/app/${state.appId}/producer`;
         } else if (state.type === "endpoint-folder") {
             newPath = `/app/${state.appId}/endpoints`;
         } else if (state.type === "message") {

@@ -19,11 +19,15 @@ export function useSvixAdminActions(
     eventTypeForm: any,
     endpointForm: any,
     messageForm: any,
+    producerForm: any,
     apps: SvixApplication[],
     eventTypes: SvixEventType[],
     endpointsByApp: Record<string, SvixEndpoint[]>,
     messagesByApp: Record<string, SvixMessage[]>,
-    toast: any
+    toast: any,
+    setEmissionProgress: (p: any) => void,
+    setIsEmitting: (e: boolean) => void,
+    isEmittingRef: React.RefObject<boolean>
 ) {
     const selectApp = useCallback(async (app: SvixApplication) => {
         setSelected({ type: "app", appId: app.id, item: app } as any);
@@ -240,6 +244,100 @@ export function useSvixAdminActions(
         }, "Message created.");
     }, [guarded, apiCall, loadMessages, messageForm]);
 
+    const createProducerMessage = useCallback(async (appId: string) => {
+        const { eventType, payload: payloadStr, repeatCount, repeatDelay, incrementField } = producerForm;
+        const basePayload = parseJsonSafe(payloadStr, {});
+
+        const sendOne = async (currentPayload: any, index: number) => {
+            const body = {
+                ...(eventType && eventType !== "none" ? { eventType } : {}),
+                payload: currentPayload,
+            };
+            const res = await apiCall("POST", `/api/v1/app/${encodeURIComponent(appId)}/msg`, body, { "idempotency-key": `${Date.now()}-${index}` });
+            if (!res.ok) throw new Error(`Message ${index + 1} failed: ${pretty(res.body) || res.status}`);
+            return res;
+        };
+
+        if (repeatCount <= 1) {
+            await guarded(() => sendOne(basePayload, 0), "Message sent.");
+            await loadMessages(appId, null, true);
+        } else {
+            toast.push("info", `Starting emission of ${repeatCount} messages...`);
+            (isEmittingRef as any).current = true;
+            setIsEmitting(true);
+            const firstPayload = JSON.parse(JSON.stringify(basePayload));
+            let nextPayload = JSON.parse(JSON.stringify(basePayload));
+            if (repeatCount > 1 && incrementField && nextPayload[incrementField] !== undefined) {
+                if (typeof nextPayload[incrementField] === "number") {
+                    nextPayload[incrementField]++;
+                } else if (typeof nextPayload[incrementField] === "string") {
+                    const num = parseInt(nextPayload[incrementField], 10);
+                    if (!isNaN(num)) {
+                        nextPayload[incrementField] = (num + 1).toString();
+                    }
+                }
+            }
+
+            setEmissionProgress({ 
+                current: 0, 
+                total: repeatCount, 
+                currentPayload: firstPayload, 
+                nextPayload: nextPayload,
+                lastEmittedAt: null,
+                nextEmissionAt: null
+            });
+            
+            await (async () => {
+                let currentPayload = JSON.parse(JSON.stringify(basePayload));
+                for (let i = 0; i < repeatCount; i++) {
+                    if (!isEmittingRef.current) {
+                        toast.push("info", "Emission stopped by user.");
+                        break;
+                    }
+
+                    try {
+                        const payloadToEmit = JSON.parse(JSON.stringify(currentPayload));
+                        setEmissionProgress((p: any) => ({ ...p, currentPayload: payloadToEmit }));
+                        await sendOne(payloadToEmit, i);
+                        const now = Date.now();
+                        setEmissionProgress((p: any) => ({ ...p, current: i + 1, lastEmittedAt: now }));
+                        
+                        // Increment logic for next message
+                        if (incrementField && currentPayload[incrementField] !== undefined) {
+                            if (typeof currentPayload[incrementField] === "number") {
+                                currentPayload[incrementField]++;
+                            } else if (typeof currentPayload[incrementField] === "string") {
+                                const num = parseInt(currentPayload[incrementField], 10);
+                                if (!isNaN(num)) {
+                                    currentPayload[incrementField] = (num + 1).toString();
+                                }
+                            }
+                        }
+
+                        if (i < repeatCount - 1) {
+                            const nextAt = Date.now() + repeatDelay;
+                            const nextPayload = JSON.parse(JSON.stringify(currentPayload));
+                            setEmissionProgress((p: any) => ({ ...p, nextPayload, nextEmissionAt: nextAt }));
+                            await new Promise(resolve => setTimeout(resolve, repeatDelay));
+                        }
+                    } catch (err: any) {
+                        toast.push("error", err.message);
+                        break;
+                    }
+                }
+                (isEmittingRef as any).current = false;
+                setIsEmitting(false);
+                toast.push("success", `Finished emitting messages.`);
+                await loadMessages(appId, null, true);
+            })();
+        }
+    }, [apiCall, guarded, loadMessages, producerForm, toast, setEmissionProgress, setIsEmitting, isEmittingRef]);
+
+    const stopEmission = useCallback(() => {
+        (isEmittingRef as any).current = false;
+        setIsEmitting(false);
+    }, [isEmittingRef, setIsEmitting]);
+
     const resendToEndpoint = useCallback(async (appId: string, msgId: string, endpointId: string) => {
         await guarded(async () => {
             const res = await apiCall("POST", `/api/v1/app/${encodeURIComponent(appId)}/msg/${encodeURIComponent(msgId)}/endpoint/${encodeURIComponent(endpointId)}/resend`, {}, { "idempotency-key": String(Date.now()) });
@@ -271,6 +369,8 @@ export function useSvixAdminActions(
         patchEndpoint,
         deleteEndpoint,
         createMessage,
+        createProducerMessage,
+        stopEmission,
         resendToEndpoint,
         deleteMessageContent,
     };
