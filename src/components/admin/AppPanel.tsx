@@ -8,11 +8,12 @@ import { SvixApplication, SelectedItem } from "@/types/svix";
 import { JsonField } from "./JsonField";
 
 export function SmallStat({ title, value }: { title: string; value: number | string }) {
+    const isMore = typeof value === 'string' && value.endsWith('+');
     return (
         <Card className="rounded-xl bg-card/40 border shadow-none">
             <CardContent className="p-3">
                 <div className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">{title}</div>
-                <div className="text-xl font-bold">{value}</div>
+                <div className={`text-xl font-bold ${isMore ? 'text-orange-500' : ''}`}>{value}</div>
             </CardContent>
         </Card>
     );
@@ -31,7 +32,7 @@ interface AppPanelProps {
         appsCount: number;
         eventTypesCount: number;
         endpointsCount: number;
-        messagesCount: number;
+        messagesCount: number | string;
     };
 }
 

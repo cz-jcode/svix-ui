@@ -116,6 +116,7 @@ export default function SvixAdmin() {
         attemptsByEndpoint,
         attemptsByMessage,
         destinationsByMessage,
+        hasMoreMessagesByApp,
         isLoadingMoreMessages,
         loadApps,
         loadEventTypes,
@@ -373,6 +374,7 @@ export default function SvixAdmin() {
                                 apps={apps}
                                 endpointsByApp={endpointsByApp}
                                 messagesByApp={messagesByApp}
+                                hasMoreMessagesByApp={hasMoreMessagesByApp}
                                 loadEventTypes={loadEventTypes}
                                 loadEndpoints={loadEndpoints}
                                 loadMessages={loadMessages}
@@ -413,6 +415,7 @@ export default function SvixAdmin() {
                                 eventTypes={eventTypes}
                                 endpointsByApp={endpointsByApp}
                                 messagesByApp={messagesByApp}
+                                hasMoreMessagesByApp={hasMoreMessagesByApp}
                                 destinationsByMessage={destinationsByMessage}
                                 attemptsByEndpoint={attemptsByEndpoint}
                                 attemptsByMessage={attemptsByMessage}

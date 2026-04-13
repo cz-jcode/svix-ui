@@ -14,6 +14,7 @@ interface ResourceTreeProps {
     apps: SvixApplication[];
     endpointsByApp: Record<string, SvixEndpoint[]>;
     messagesByApp: Record<string, SvixMessage[]>;
+    hasMoreMessagesByApp: Record<string, boolean>;
     loadEventTypes: () => Promise<void>;
     loadEndpoints: (appId: string) => Promise<void>;
     loadMessages: (appId: string) => Promise<void>;
@@ -33,6 +34,7 @@ export function ResourceTree({
     apps,
     endpointsByApp,
     messagesByApp,
+    hasMoreMessagesByApp,
     loadEventTypes,
     loadEndpoints,
     loadMessages,
@@ -197,7 +199,10 @@ export function ResourceTree({
                                     }}
                                     icon={<Mail className="h-4 w-4" />}
                                     label="Messages"
-                                    right={<Badge variant="secondary">{messagesByApp[app.id]?.length || 0}</Badge>}
+                                    right={<Badge variant="secondary" className={hasMoreMessagesByApp[app.id] && (messagesByApp[app.id]?.length || 0) >= 50 ? "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900 dark:text-amber-300" : ""}>
+                                        {messagesByApp[app.id]?.length || 0}
+                                        {hasMoreMessagesByApp[app.id] && (messagesByApp[app.id]?.length || 0) >= 50 ? "+" : ""}
+                                    </Badge>}
                                 />
                             </>
                         )}

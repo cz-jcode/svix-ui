@@ -22,6 +22,7 @@ export function useSvixAdminState(
     const [endpointsLoadedByApp, setEndpointsLoadedByApp] = useState<Record<string, boolean>>({});
     const [messagesLoadedByApp, setMessagesLoadedByApp] = useState<Record<string, boolean>>({});
     const [messagesByApp, setMessagesByApp] = useState<Record<string, SvixMessage[]>>({});
+    const [hasMoreMessagesByApp, setHasMoreMessagesByApp] = useState<Record<string, boolean>>({});
     const [attemptsByEndpoint, setAttemptsByEndpoint] = useState<Record<string, SvixAttempt[]>>({});
     const [attemptsByMessage, setAttemptsByMessage] = useState<Record<string, SvixAttempt[]>>({});
     const [destinationsByMessage, setDestinationsByMessage] = useState<Record<string, SvixEndpoint[]>>({});
@@ -84,6 +85,9 @@ export function useSvixAdminState(
             if (!res.ok) throw new Error(`Failed to load messages: ${res.status}`);
             
             const newData: SvixMessage[] = res.body.data ?? [];
+            const hasMore = !!res.body.iterator;
+            setHasMoreMessagesByApp(prev => ({ ...prev, [appId]: hasMore }));
+
             let updatedMsgs: SvixMessage[] = [];
             if (iterator) {
                 setMessagesByApp(prev => {
@@ -148,6 +152,7 @@ export function useSvixAdminState(
         attemptsByMessage, setAttemptsByMessage,
         destinationsByMessage, setDestinationsByMessage,
         msgIterator, setMsgIterator,
+        hasMoreMessagesByApp, setHasMoreMessagesByApp,
         isLoadingMoreMessages,
         loadApps,
         loadEventTypes,
