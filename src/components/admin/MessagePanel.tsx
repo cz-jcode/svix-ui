@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SvixMessage, SelectedItem, SvixEndpoint } from "@/types/svix";
 import { JsonField } from "./JsonField";
-import { pretty, classNames } from "@/utils/admin";
+import { pretty, classNames, statusTone, statusLabel } from "@/utils/admin";
 
 interface MessagePanelProps {
     selected: SelectedItem;
@@ -347,10 +347,16 @@ export function MessagePanel({
                                                     <Card key={attempt.id} className="rounded-xl border shadow-none bg-card/50 w-full">
                                                         <CardContent className="p-3 space-y-2 w-full">
                                                             <div className="flex items-start justify-between w-full">
-                                                                <div className="text-[11px] font-mono font-bold opacity-70 truncate mr-2">{attempt.id}</div>
-                                                                <Badge variant={attempt.responseStatusCode < 300 ? "default" : "destructive"} className="text-[9px] px-1.5 py-0 font-bold">
-                                                                    {attempt.responseStatusCode}
-                                                                </Badge>
+                                                                <div className="flex flex-col min-w-0 mr-2">
+                                                                    <div className="text-[11px] font-mono font-bold opacity-70 truncate">{attempt.id}</div>
+                                                                    <div className="text-[10px] opacity-60 mt-0.5">{attempt.timestamp}</div>
+                                                                </div>
+                                                                <div className="flex flex-col items-end shrink-0 gap-1">
+                                                                    <Badge variant="outline" className={classNames("text-[9px] px-1.5 py-0 font-bold border-none", statusTone(attempt.status))}>
+                                                                        {statusLabel(attempt.status)}
+                                                                    </Badge>
+                                                                    <div className="text-[9px] font-bold opacity-60">HTTP {attempt.responseStatusCode}</div>
+                                                                </div>
                                                             </div>
                                                             <div className="flex items-center justify-between text-[11px] w-full">
                                                                 <div className="font-medium text-muted-foreground truncate flex-1">EP: {attempt.endpointId}</div>
