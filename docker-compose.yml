@@ -3,7 +3,7 @@ services:
   svix-ui:
     build: https://github.com/cz-jcode/svix-ui.git
     ports:
-      - "${SVIX_UI_PORT:-9999:80}"
+      - "${SVIX_UI_PORT:-9999}:80"
     environment:
       - SVIX_BASE_URL=http://localhost:${SVIX_PORT:-9998}
 
