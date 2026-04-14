@@ -56,7 +56,7 @@ export function ConsolePanel({ history, isOpen, onToggle, height, setHeight }: C
                             © {new Date().getFullYear()} <a href="https://github.com/sopak" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Kamil Sopko</a> & <a href="https://github.com/cz-jcode" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors italic">J-CODE</a> SVIX UI Admin
                         </p>
                         <div className="flex items-center gap-3 shrink-0">
-                            <span className="font-mono bg-muted/50 px-1.5 py-0.5 rounded border border-border/40">v1.0.0</span>
+                            <span className="font-mono bg-muted/50 px-1.5 py-0.5 rounded border border-border/40">v{import.meta.env.PACKAGE_VERSION || '0.0.0'}</span>
                             <span className="uppercase tracking-wider opacity-70">MIT License</span>
                         </div>
                     </div>
