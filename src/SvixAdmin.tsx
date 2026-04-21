@@ -115,7 +115,7 @@ export default function SvixAdmin() {
         messagesByApp,
         attemptsByEndpoint,
         attemptsByMessage,
-        destinationsByMessage,
+        targetEndpointsByMessage,
         hasMoreMessagesByApp,
         isLoadingMoreMessages,
         loadApps,
@@ -125,7 +125,7 @@ export default function SvixAdmin() {
         loadMoreMessages,
         loadAttemptsForEndpoint,
         loadAttemptsForMessage,
-        loadDestinationsForMessage,
+        loadTargetEndpointsForMessage,
         setMessagesByApp,
         buildQuery
     } = useSvixAdminState(apiCall, guarded, msgSearch, selected, (appId: string, msg: SvixMessage) => selectMessage(appId, msg));
@@ -277,7 +277,7 @@ export default function SvixAdmin() {
         }
 
         if (selected.type === "message" && selected.appId && selected.msgId) {
-            loadDestinationsForMessage(selected.appId, selected.msgId);
+            loadTargetEndpointsForMessage(selected.appId, selected.msgId);
             loadAttemptsForMessage(selected.appId, selected.msgId, attemptQuery());
             setLoadedContext(contextKey);
         } else if (selected.type === "endpoint-attempts" && selected.appId && selected.endpointId) {
@@ -287,7 +287,7 @@ export default function SvixAdmin() {
             loadAttemptsForMessage(selected.appId, selected.msgId, attemptQuery());
             setLoadedContext(contextKey);
         }
-    }, [selected.type, selected.appId, selected.msgId, selected.endpointId, attemptFilter, loadDestinationsForMessage, loadAttemptsForMessage, loadAttemptsForEndpoint, loadEndpoints, loadMessages, endpointsByApp, messagesByApp, baseUrl, token, loadedContext]);
+    }, [selected.type, selected.appId, selected.msgId, selected.endpointId, attemptFilter, loadTargetEndpointsForMessage, loadAttemptsForMessage, loadAttemptsForEndpoint, loadEndpoints, loadMessages, endpointsByApp, messagesByApp, baseUrl, token, loadedContext]);
 
 
 
@@ -424,7 +424,7 @@ export default function SvixAdmin() {
                                 endpointsByApp={endpointsByApp}
                                 messagesByApp={messagesByApp}
                                 hasMoreMessagesByApp={hasMoreMessagesByApp}
-                                destinationsByMessage={destinationsByMessage}
+                                targetEndpointsByMessage={targetEndpointsByMessage}
                                 attemptsByEndpoint={attemptsByEndpoint}
                                 attemptsByMessage={attemptsByMessage}
                                 appForm={appForm}

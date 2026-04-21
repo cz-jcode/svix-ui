@@ -25,7 +25,7 @@ export function useSvixAdminState(
     const [hasMoreMessagesByApp, setHasMoreMessagesByApp] = useState<Record<string, boolean>>({});
     const [attemptsByEndpoint, setAttemptsByEndpoint] = useState<Record<string, SvixAttempt[]>>({});
     const [attemptsByMessage, setAttemptsByMessage] = useState<Record<string, SvixAttempt[]>>({});
-    const [destinationsByMessage, setDestinationsByMessage] = useState<Record<string, SvixEndpoint[]>>({});
+    const [targetEndpointsByMessage, setTargetEndpointsByMessage] = useState<Record<string, SvixEndpoint[]>>({});
     
     const [msgIterator, setMsgIterator] = useState<string | null>(null);
     const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false);
@@ -148,12 +148,12 @@ export function useSvixAdminState(
         }, "Message attempts loaded.");
     }, [apiCall, guarded]);
 
-    const loadDestinationsForMessage = useCallback(async (appId: string, msgId: string) => {
+    const loadTargetEndpointsForMessage = useCallback(async (appId: string, msgId: string) => {
         return guarded(async () => {
             const res = await apiCall("GET", `/api/v1/app/${encodeURIComponent(appId)}/msg/${encodeURIComponent(msgId)}/endpoint${buildQuery({ limit: 100 })}`);
-            if (!res.ok) throw new Error(`Failed to load message destinations: ${res.status}`);
-            setDestinationsByMessage((s) => ({ ...s, [`${appId}:${msgId}`]: res.body.data ?? [] }));
-        }, "Message destinations loaded.");
+            if (!res.ok) throw new Error(`Failed to load message target endpoints: ${res.status}`);
+            setTargetEndpointsByMessage((s) => ({ ...s, [`${appId}:${msgId}`]: res.body.data ?? [] }));
+        }, "Message target endpoints loaded.");
     }, [apiCall, guarded, buildQuery]);
 
     useEffect(() => {
@@ -182,7 +182,7 @@ export function useSvixAdminState(
         messagesByApp, setMessagesByApp,
         attemptsByEndpoint, setAttemptsByEndpoint,
         attemptsByMessage, setAttemptsByMessage,
-        destinationsByMessage, setDestinationsByMessage,
+        targetEndpointsByMessage, setTargetEndpointsByMessage,
         msgIterator, setMsgIterator,
         hasMoreMessagesByApp, setHasMoreMessagesByApp,
         isLoadingMoreMessages,
@@ -193,7 +193,7 @@ export function useSvixAdminState(
         loadMoreMessages,
         loadAttemptsForEndpoint,
         loadAttemptsForMessage,
-        loadDestinationsForMessage,
+        loadTargetEndpointsForMessage,
         buildQuery
     };
 }

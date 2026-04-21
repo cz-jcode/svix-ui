@@ -22,7 +22,7 @@ interface DetailViewProps {
     endpointsByApp: Record<string, SvixEndpoint[]>;
     messagesByApp: Record<string, SvixMessage[]>;
     hasMoreMessagesByApp: Record<string, boolean>;
-    destinationsByMessage: Record<string, SvixEndpoint[]>;
+    targetEndpointsByMessage: Record<string, SvixEndpoint[]>;
     attemptsByEndpoint: Record<string, SvixAttempt[]>;
     attemptsByMessage: Record<string, SvixAttempt[]>;
     
@@ -78,7 +78,7 @@ export function DetailView({
     endpointsByApp,
     messagesByApp,
     hasMoreMessagesByApp,
-    destinationsByMessage,
+    targetEndpointsByMessage,
     attemptsByEndpoint,
     attemptsByMessage,
     appForm,
@@ -126,7 +126,7 @@ export function DetailView({
     const selectedEndpoints = selected.appId ? endpointsByApp[selected.appId] || [] : [];
     const selectedMessages = selected.appId ? messagesByApp[selected.appId] || [] : [];
     const hasMore = selected.appId ? hasMoreMessagesByApp[selected.appId] || false : false;
-    const selectedMessageDestinations = selected.appId && selected.msgId ? destinationsByMessage[`${selected.appId}:${selected.msgId}`] || [] : [];
+    const selectedMessageTargetEndpoints = selected.appId && selected.msgId ? targetEndpointsByMessage[`${selected.appId}:${selected.msgId}`] || [] : [];
     const selectedEndpointAttempts = selected.appId && selected.endpointId ? attemptsByEndpoint[`${selected.appId}:${selected.endpointId}`] || [] : [];
     const selectedMessageAttempts = selected.appId && selected.msgId ? attemptsByMessage[`${selected.appId}:${selected.msgId}`] || [] : [];
 
@@ -180,7 +180,7 @@ export function DetailView({
                 <MessagePanel
                     selected={selected}
                     messages={selectedMessages}
-                    destinations={selectedMessageDestinations}
+                    targetEndpoints={selectedMessageTargetEndpoints}
                     isBusy={isBusy}
                     isLoadingMore={isLoadingMoreMessages}
                     readIds={readMessageIds}

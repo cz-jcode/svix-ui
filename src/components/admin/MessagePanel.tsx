@@ -15,7 +15,7 @@ import { pretty, classNames, statusTone, statusLabel } from "@/utils/admin";
 interface MessagePanelProps {
     selected: SelectedItem;
     messages: SvixMessage[];
-    destinations: SvixEndpoint[];
+    targetEndpoints: SvixEndpoint[];
     isBusy: boolean;
     isLoadingMore: boolean;
     readIds: Set<string>;
@@ -38,7 +38,7 @@ interface MessagePanelProps {
 export function MessagePanel({
     selected,
     messages,
-    destinations,
+    targetEndpoints,
     isBusy,
     isLoadingMore,
     readIds,
@@ -297,42 +297,50 @@ export function MessagePanel({
                                             </pre>
                                         </div>
 
-                                        {destinations.length > 0 && (
-                                            <div className="w-full">
-                                                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Destinations ({destinations.length})</div>
-                                                <div className="space-y-3 w-full">
-                                                    {destinations.map((d) => (
-                                                        <Card key={d.id} className="rounded-xl border shadow-none bg-card/50 w-full">
-                                                            <CardContent className="p-4 w-full">
-                                                                <div className="flex items-center justify-between mb-3 w-full">
-                                                                    <div className="min-w-0 flex-1">
-                                                                        <div className="text-xs font-bold truncate mb-1 text-foreground/90">{d.description || d.url}</div>
-                                                                        <div className="text-[10px] font-mono font-bold text-muted-foreground truncate">{d.id}</div>
-                                                                    </div>
-                                                                    <div className="flex gap-2 shrink-0 ml-4">
-                                                                        {d.disabled && <Badge variant="destructive" className="text-[9px]">Disabled</Badge>}
-                                                                        <Button
-                                                                            size="sm"
-                                                                            variant="secondary"
-                                                                            className="h-8 text-xs shrink-0"
-                                                                            onClick={() => selected.appId && selectedMsg.id && onResend(selected.appId, selectedMsg.id, d.id)}
-                                                                        >
-                                                                            <Send className="h-3 w-3 mr-1.5" /> Resend
-                                                                        </Button>
-                                                                    </div>
+                                        <div className="w-full">
+                                            <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Target Endpoints ({targetEndpoints.length})</div>
+                                            <div className="space-y-3 w-full">
+                                                {targetEndpoints.map((d: any) => (
+                                                    <Card key={d.id} className="rounded-xl border shadow-none bg-card/50 w-full">
+                                                        <CardContent className="p-4 w-full">
+                                                            <div className="flex items-center justify-between mb-3 w-full">
+                                                                <div className="min-w-0 flex-1">
+                                                                    <div className="text-xs font-bold truncate mb-1 text-foreground/90">{d.description || d.url}</div>
+                                                                    <div className="text-[10px] font-mono font-bold text-muted-foreground truncate">{d.id}</div>
                                                                 </div>
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] bg-muted/20 p-2 rounded-lg border w-full">
-                                                                    <div className="flex justify-between"><span className="opacity-50">URL:</span> <span className="truncate ml-2">{d.url}</span></div>
-                                                                    <div className="flex justify-between"><span className="opacity-50">Version:</span> <span>{d.version}</span></div>
-                                                                    {d.uid && <div className="flex justify-between"><span className="opacity-50">UID:</span> <span>{d.uid}</span></div>}
-                                                                    {d.rateLimit && <div className="flex justify-between"><span className="opacity-50">Rate Limit:</span> <span>{d.rateLimit}</span></div>}
+                                                                <div className="flex gap-2 shrink-0 ml-4 items-center">
+                                                                    {d.status !== undefined && (
+                                                                        <Badge variant="outline" className={classNames("text-[9px] px-1.5 py-0 font-bold border-none", statusTone(d.status))}>
+                                                                            {statusLabel(d.status)}
+                                                                        </Badge>
+                                                                    )}
+                                                                    {d.disabled && <Badge variant="destructive" className="text-[9px]">Disabled</Badge>}
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="secondary"
+                                                                        className="h-8 text-xs shrink-0"
+                                                                        onClick={() => selected.appId && selectedMsg.id && onResend(selected.appId, selectedMsg.id, d.id)}
+                                                                    >
+                                                                        <Send className="h-3 w-3 mr-1.5" /> Resend
+                                                                    </Button>
                                                                 </div>
-                                                            </CardContent>
-                                                        </Card>
-                                                    ))}
-                                                </div>
+                                                            </div>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] bg-muted/20 p-2 rounded-lg border w-full">
+                                                                <div className="flex justify-between"><span className="opacity-50">URL:</span> <span className="truncate ml-2">{d.url}</span></div>
+                                                                <div className="flex justify-between"><span className="opacity-50">Version:</span> <span>{d.version}</span></div>
+                                                                {d.uid && <div className="flex justify-between"><span className="opacity-50">UID:</span> <span>{d.uid}</span></div>}
+                                                                {d.rateLimit && <div className="flex justify-between"><span className="opacity-50">Rate Limit:</span> <span>{d.rateLimit}</span></div>}
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                ))}
+                                                {targetEndpoints.length === 0 && !isBusy && (
+                                                    <div className="text-xs text-muted-foreground text-center py-6 bg-muted/10 rounded-xl border border-dashed italic w-full">
+                                                        No endpoints found matching the filters and event types.
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
                                 </ScrollArea>
                             </TabsContent>
@@ -352,9 +360,20 @@ export function MessagePanel({
                                                                     <div className="text-[10px] opacity-60 mt-0.5">{attempt.timestamp}</div>
                                                                 </div>
                                                                 <div className="flex flex-col items-end shrink-0 gap-1">
-                                                                    <Badge variant="outline" className={classNames("text-[9px] px-1.5 py-0 font-bold border-none", statusTone(attempt.status))}>
-                                                                        {statusLabel(attempt.status)}
-                                                                    </Badge>
+                                                                    <div className="flex gap-2 items-center">
+                                                                        <Badge variant="outline" className={classNames("text-[9px] px-1.5 py-0 font-bold border-none", statusTone(attempt.status))}>
+                                                                            {statusLabel(attempt.status)}
+                                                                        </Badge>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="ghost"
+                                                                            className="h-6 w-6 p-0 hover:bg-muted"
+                                                                            title="Resend to this endpoint"
+                                                                            onClick={() => selected.appId && selectedMsg.id && onResend(selected.appId, selectedMsg.id, attempt.endpointId)}
+                                                                        >
+                                                                            <Send className="h-3 w-3" />
+                                                                        </Button>
+                                                                    </div>
                                                                     <div className="text-[9px] font-bold opacity-60">HTTP {attempt.responseStatusCode}</div>
                                                                 </div>
                                                             </div>
