@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2] - 2026-04-21
+
+### Added
+- Added status badges to "Target Endpoints" list for better delivery visibility.
+- Added quick "Resend" action directly to individual delivery attempts and target endpoints.
+- Added descriptive empty state message when no target endpoints match a message's filters.
+
+### Changed
+- Renamed "Destinations" to "Target Endpoints" throughout the application for better clarity and consistency with Svix terminology.
+
 ## [1.0.1] - 2026-04-14
 
 ### Added
