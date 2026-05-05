@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.3] - 2026-05-05
+
+### Security
+- Updated `hono` to `>=4.12.14` to resolve GHSA-458j-xx4x-4375 (HTML Injection).
+- Updated `postcss` to `>=8.5.10` to resolve GHSA-qx2v-qp2m-jg93 (XSS).
+
 ## [1.0.2] - 2026-04-21
 
 ### Added
